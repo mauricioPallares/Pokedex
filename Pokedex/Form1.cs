@@ -7,26 +7,28 @@ namespace Pokedex
     public partial class Form1 : Form
     {
         Pokemon pokemon = new Pokemon();
-        
+
 
         public Form1()
         {
             InitializeComponent();
-        
+
 
         }
 
         private async Task Read(string idPokemon)
         {
-
             using var client = new HttpClient();
             var response = await client.GetStringAsync($"https://pokeapi.co/api/v2/pokemon/{idPokemon}");
             pokemon = Pokemon.FromJson(response);
 
+        }
+        private async Task getEvolution(string idPokemon)
+        {
+            using var client = new HttpClient();
+            var response = await client.GetStringAsync($"https://pokeapi.co/api/v2/evolution-chain/{idPokemon}");
             
         }
-
-       
 
         private async void button1_Click(object sender, EventArgs e)
         {
@@ -40,42 +42,44 @@ namespace Pokedex
                     listMoves.Items.Clear();
                     statsPanel.Controls.Clear();
                     TypeElementPanel.Controls.Clear();
+                    txtSearchPokemon.Text = String.Empty;
 
                     loadPokemon(pokemon);
                 }
                 else
                 {
-                    throw new Exception("texto de busqueda vacio");
+                    
+                    throw new Exception("Texto de busqueda vacio");
                 }
-                
+
             }
             catch (Exception ex)
             {
 
                 MessageBox.Show("Se ha encontrado un error\n" + ex.Message.ToString());
             }
-            
+
         }
 
         public void loadPokemon(Pokemon pokemon)
         {
             lblName.Text = pokemon.Name.ToString();
-            
+
             lblWeight.Text = pokemon.Weight.ToString();
             lblHeight.Text = pokemon.Height.ToString();
             lblExperience.Text = pokemon.BaseExperience.ToString().ToUpper();
+            lblId.Text = pokemon.Id.ToString();
 
             mainImage.Load(pokemon.Sprites.Other.OfficialArtwork.FrontDefault.ToString());
             frontImage.Load(pokemon.Sprites.FrontDefault.ToString());
             backImage.Load(pokemon.Sprites.BackDefault.ToString());
-            
-            
+           
+
             foreach (Move item in pokemon.Moves)
             {
                 listMoves.Items.Add(item.MoveMove.Name.ToString());
             }
-
-            
+                        
             foreach (Ability item in pokemon.Abilities)
             {
                 Label label = new Label();
@@ -97,9 +101,6 @@ namespace Pokedex
                 TypeElementPanel.Controls.Add(pictureBox);
 
             }
-
-            
-
             
             foreach (Stat item in pokemon.Stats)
             {
@@ -114,15 +115,11 @@ namespace Pokedex
                 bar.Size = new Size(290,28);
                 bar.MaxValue = 200;
                 bar.Value = item.BaseStat;
+
                 statsPanel.Controls.Add(bar);
 
             }
-
-        
-
-
-
-           
+                    
         }
 
         public Image setImageType(string type) => type switch
